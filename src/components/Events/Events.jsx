@@ -5,7 +5,7 @@ import PastEventsSearch from "./PastEventsSearch";
 import Fade from "react-reveal/Fade";
 import React from "react";
 
-export default function Events() {
+function Events() {
   return (
     <div>
       {/* Carousel */}
@@ -85,3 +85,5 @@ export default function Events() {
     </div>
   );
 }
+
+export default Events;
