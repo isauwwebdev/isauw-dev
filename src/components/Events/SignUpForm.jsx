@@ -34,6 +34,7 @@ export default function SignUpForm() {
   } = useForm();
 
   // Fetch colleges based on user input (name)
+  //TODO: college list diganti client side aja
   const renderCollegeList = async (name) => {
     try {
       if (name) {
