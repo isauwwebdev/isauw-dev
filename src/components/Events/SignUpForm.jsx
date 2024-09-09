@@ -19,7 +19,7 @@ export default function SignUpForm() {
   const [subscribe, setSubscribe] = useState(true); // State for newsletter subscription
 
   // State for modals
-  const [showSuccessModal, setShowSuccessModal] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
 
   const seattleColleges = [
