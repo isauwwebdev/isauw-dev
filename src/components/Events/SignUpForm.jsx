@@ -29,6 +29,7 @@ export default function SignUpForm() {
     { name: "Green River College" },
     { name: "Seattle Pacific University" },
     { name: "Seattle Central College" },
+    { name: "Whatcom Community College" },
   ];
 
   // Initialize tooltips
