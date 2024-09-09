@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Spinner } from "react-bootstrap";
+import { Spinner, Modal, Button } from "react-bootstrap";
 import "react-phone-number-input/style.css";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
-import axios from "axios";
-import Carousel from "react-bootstrap/Carousel";
 import { Tooltip } from "bootstrap";
-import { collection, addDoc, doc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import { Link } from "react-router-dom";
 
 export default function SignUpForm() {
   const [colleges, setColleges] = useState([]);
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [selectedCollege, setSelectedCollege] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isWARegistered, setIsWARegistered] = useState(true); // State for WhatsApp registration
+  const [subscribe, setSubscribe] = useState(true); // State for newsletter subscription
+
+  // State for modals
+  const [showSuccessModal, setShowSuccessModal] = useState(true);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   const seattleColleges = [
     { name: "University of Washington" },
@@ -48,39 +53,9 @@ export default function SignUpForm() {
     register,
     handleSubmit,
     formState: { errors },
-    setError,
+    setValue,
     clearErrors,
   } = useForm();
-
-  // Fetch colleges based on user input (name)
-  // TODO: (API unused for now due to lagg to fetch everytime)
-  const renderCollegeList = async (name) => {
-    try {
-      if (name) {
-        setIsLoading(true);
-        const response = await axios.get(
-          `http://universities.hipolabs.com/search`,
-          {
-            params: { name },
-          }
-        );
-        // Filter the results to only show colleges in the US
-        const filteredColleges = response.data.filter(
-          (college) => college.country === "United States"
-        );
-        setColleges(filteredColleges);
-        setShowSuggestions(true);
-        setIsLoading(false);
-      } else {
-        setColleges([]);
-        setShowSuggestions(false);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error fetching colleges:", error);
-      setIsLoading(false);
-    }
-  };
 
   const renderCollegeListTemp = (name) => {
     if (name) {
@@ -106,50 +81,34 @@ export default function SignUpForm() {
   };
 
   const onSubmit = async (data) => {
-    if (!phoneNumber) {
-      setError("phone_number", {
-        type: "manual",
-        message: "Phone number is required",
-      });
-      return;
-    }
+    // The phoneNumber is already validated by react-hook-form, no need for manual validation.
+    console.log(data);
+    const formData = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phoneNumber: data.phoneNumber,
+      selectedCollege: selectedCollege,
+      isWARegistered: isWARegistered, // Use state value
+      subscribe: subscribe, // Use state value
+      timestamp: new Date(),
+    };
 
-    if (isValidPhoneNumber(phoneNumber)) {
-      clearErrors("phone_number");
-
-      const formData = {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phoneNumber: phoneNumber, // Using camelCase
-        selectedCollege: selectedCollege,
-        isWARegistered: data.isWARegistered || false,
-        subscribe: data.subscribe || false,
-        timestamp: new Date(),
-      };
-
-      try {
-        // Add the document to the 'event-registrations' subcollection inside 'stamp-quest' in the '2024' collection
-        const signupDocRef = await addDoc(
-          collection(db, "2024/stamp-quest/event-registrations-dev"),
-          formData
-        );
-
-        console.log("Document written with ID: ", signupDocRef.id);
-        alert("Form successfully submitted!");
-      } catch (e) {
-        console.error("Error adding document: ", e);
-        alert("Error submitting the form.");
-      }
-    } else {
-      setError("phone_number", {
-        type: "manual",
-        message: "Invalid phone number",
-      });
+    try {
+      setIsLoading(true); // Show loader when form is being submitted
+      await addDoc(
+        collection(db, "2024/stamp-quest/event-registrations-dev"),
+        formData
+      );
+      setShowSuccessModal(true); // Show success modal
+    } catch (e) {
+      console.error("Error adding document: ", e);
+      setShowErrorModal(true); // Show error modal
+    } finally {
+      setIsLoading(false); // Hide loader after submission is complete
     }
   };
 
-  // Function to handle selecting a college from suggestions
   const handleSelectCollege = (collegeName) => {
     setSelectedCollege(collegeName);
     setSearchInput(collegeName);
@@ -160,7 +119,7 @@ export default function SignUpForm() {
     <div className="justify-content-center align-items-center h-100">
       <div
         style={{
-          backgroundImage: `url('../images/formBGEdited.png')`,
+          backgroundImage: `url('../images/bg_form_gradient.png')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -170,37 +129,12 @@ export default function SignUpForm() {
       >
         <div className="flex justify-center">
           <div className="bg-light rounded-lg w-10/12 md:w-2/5 mt-28 md:mt-24 mb-24 shadow-md">
-            {/* Carousel */}
-            <div className="">
-              <Carousel>
-                <Carousel.Item>
-                  <img
-                    alt="isauwbird"
-                    src="../images/isauwcard.jpg"
-                    className="mb-2 object-fill w-100 rounded-t-lg h-42 brightness-75"
-                  />
-                  <Carousel.Caption></Carousel.Caption>
-                </Carousel.Item>
-                <Carousel.Item>
-                  <img
-                    alt="isauwbird"
-                    src="../images/isauwcard.png"
-                    className="mb-2 object-fill w-100 rounded-t-md h-42 brightness-75"
-                  />
-                  <Carousel.Caption></Carousel.Caption>
-                </Carousel.Item>
-                <Carousel.Item>
-                  <img
-                    alt="isauwbird"
-                    src="../images/isauwcard.jpg"
-                    className="mb-2 object-fill w-100 rounded-t-md h-42 brightness-75"
-                  />
-                  <Carousel.Caption></Carousel.Caption>
-                </Carousel.Item>
-              </Carousel>
-            </div>
+            <img
+              src="../images/stamp_quest_poster.png"
+              alt="stamp quest poster"
+              className="mb-2 object-fill h-42 rounded-t-lg"
+            />
 
-            {/* Form Starts */}
             <div className="p-4 overflow-hidden">
               <h1 className="text-center mb-4 text-lg font-bold">
                 Seattle Stamp Quest Registration
@@ -214,7 +148,6 @@ export default function SignUpForm() {
                       First Name <div className="text-red-500"> *</div>
                     </div>
                   </label>
-
                   <input
                     id="firstName"
                     name="firstName"
@@ -223,7 +156,6 @@ export default function SignUpForm() {
                     className="form-control"
                     {...register("firstName", {
                       required: "First Name is required",
-                      pattern: /^[A-Za-z]+$/i,
                     })}
                   />
                   {errors.firstName && (
@@ -235,9 +167,11 @@ export default function SignUpForm() {
 
                 {/* Last Name */}
                 <div className="mb-3">
-                  <div className="flex flex-row gap-1">
-                    Last Name <div className="text-red-500"> *</div>
-                  </div>
+                  <label htmlFor="lastName" className="form-label">
+                    <div className="flex flex-row gap-1">
+                      Last Name <div className="text-red-500"> *</div>
+                    </div>
+                  </label>
                   <input
                     id="lastName"
                     name="lastName"
@@ -246,7 +180,6 @@ export default function SignUpForm() {
                     autoComplete="last-name"
                     {...register("lastName", {
                       required: "Last Name is required",
-                      pattern: /^[A-Za-z]+$/i,
                     })}
                   />
                   {errors.lastName && (
@@ -278,27 +211,21 @@ export default function SignUpForm() {
 
                 {/* University Search and Suggest */}
                 <div className="mb-3">
-                  <label htmlFor="collegeSearch" className="form-label">
+                  <label htmlFor="selectedCollege" className="form-label">
                     University / College
                   </label>
                   <input
+                    id="selectedCollege"
+                    name="selectedCollege"
                     type="text"
-                    id="collegeSearch"
                     className="form-control"
-                    placeholder="Search for a University / College"
+                    placeholder="Enter your University / College"
                     value={searchInput}
                     onChange={(e) => {
                       setSearchInput(e.target.value);
                       renderCollegeListTemp(e.target.value);
                     }}
                   />
-                  {/* Show spinner while loading */}
-                  {isLoading && (
-                    <div className="d-flex justify-content-center mt-2">
-                      <Spinner animation="border" variant="primary" />
-                    </div>
-                  )}
-                  {/* TODO: on click away from form, setShowSugges(false) */}
                   {showSuggestions && !isLoading && (
                     <ul
                       className="list-group mt-2"
@@ -324,39 +251,46 @@ export default function SignUpForm() {
 
                 {/* Phone Number */}
                 <div className="mb-3">
-                  <label htmlFor="phone_number" className="form-label">
+                  <label htmlFor="phoneNumber" className="form-label">
                     <div className="flex flex-row gap-1">
                       Phone Number
                       <div className="text-red-500"> *</div>
                     </div>
                   </label>
                   <PhoneInput
-                    id="phone_number"
-                    international
-                    autoComplete="phone-number"
-                    defaultCountry="US"
-                    value={phoneNumber}
-                    onChange={(value) => {
-                      setPhoneNumber(value);
-                      clearErrors("phone_number");
-                    }}
+                    id="phoneNumber"
+                    name="phoneNumber"
                     className="form-control"
+                    placeholder="Enter your phone number"
+                    international
+                    defaultCountry="US"
+                    value={phoneNumber} // The state for the phone number
+                    {...register("phoneNumber", {
+                      required: "Phone Number is required",
+                      validate: (value) =>
+                        isValidPhoneNumber(value) || "Phone Number is invalid",
+                    })}
+                    onChange={(value) => {
+                      setPhoneNumber(value); // Update the phoneNumber state
+                      setValue("phoneNumber", value); // Update the form value for react-hook-form
+                      clearErrors("phoneNumber");
+                    }}
                   />
                   <small>
-                    We will send only event reminders through{" "}
-                    <i className="fa fa-whatsapp"></i>{" "}
+                    Input a <i className="fa fa-whatsapp"></i>
                     <a
                       href="https://whatsapp.com"
                       target="_blank"
                       rel="noreferrer"
                     >
+                      {" "}
                       WhatsApp
-                    </a>
-                    .
+                    </a>{" "}
+                    registered number for event reminders.
                   </small>
-                  {errors.phone_number && (
+                  {errors.phoneNumber && (
                     <div className="text-danger">
-                      {errors.phone_number.message}
+                      {errors.phoneNumber.message}
                     </div>
                   )}
                 </div>
@@ -364,7 +298,7 @@ export default function SignUpForm() {
                 {/* Boolean Whatsapp */}
                 <div className="flex flex-row gap-2">
                   <label htmlFor="isWARegistered" className="form-label">
-                    Registered on{" "}
+                    Is your number registered on{" "}
                     <a
                       href="https://whatsapp.com"
                       target="_blank"
@@ -383,7 +317,8 @@ export default function SignUpForm() {
                       type="checkbox"
                       id="isWARegistered"
                       className="form-check-input"
-                      defaultChecked
+                      checked={isWARegistered}
+                      onChange={(e) => setIsWARegistered(e.target.checked)} // Update state
                     />
                   </div>
                 </div>
@@ -403,7 +338,8 @@ export default function SignUpForm() {
                       type="checkbox"
                       id="subscribe"
                       className="form-check-input"
-                      defaultChecked
+                      checked={subscribe}
+                      onChange={(e) => setSubscribe(e.target.checked)} // Update state
                     />
                   </div>
                 </div>
@@ -413,9 +349,75 @@ export default function SignUpForm() {
                   <small> indicates required fields </small>
                 </div>
 
-                <button type="submit" className="btn btn-primary w-100">
-                  Register
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Spinner
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />{" "}
+                      Registering...
+                    </>
+                  ) : (
+                    "Register"
+                  )}
                 </button>
+
+                {/* Success Modal */}
+                <Modal
+                  show={showSuccessModal}
+                  onHide={() => setShowSuccessModal(false)}
+                  centered
+                  className="rounded-xl"
+                >
+                  <Modal.Header closeButton>
+                    <Modal.Title>Success</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    Your registration has been successfully submitted! See you
+                    on Stamp Quest!
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button
+                      variant="primary"
+                      onClick={() => setShowSuccessModal(false)}
+                    >
+                      Close
+                    </Button>
+                    <Link to="/" className="btn btn-success">
+                      Go to Home
+                    </Link>
+                  </Modal.Footer>
+                </Modal>
+
+                {/* Error Modal */}
+                <Modal
+                  show={showErrorModal}
+                  onHide={() => setShowErrorModal(false)}
+                  centered
+                >
+                  <Modal.Header closeButton>
+                    <Modal.Title>Error</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    There was an error submitting your registration. Please try
+                    again.
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button
+                      variant="danger"
+                      onClick={() => setShowErrorModal(false)}
+                    >
+                      Close
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
               </form>
             </div>
           </div>
