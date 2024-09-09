@@ -15,6 +15,13 @@ export default function SignUpForm() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const seattleColleges = [
+    { name: "University of Washington" },
+    { name: "Shoreline Community College" },
+    { name: "Edmonds College" },
+    { name: "Seattle University" },
+  ];
+
   // Initialize tooltips
   useEffect(() => {
     const tooltipTriggerList = document.querySelectorAll(
@@ -34,7 +41,6 @@ export default function SignUpForm() {
   } = useForm();
 
   // Fetch colleges based on user input (name)
-  //TODO: college list diganti client side aja
   const renderCollegeList = async (name) => {
     try {
       if (name) {
@@ -49,6 +55,7 @@ export default function SignUpForm() {
         const filteredColleges = response.data.filter(
           (college) => college.country === "United States"
         );
+
         setColleges(filteredColleges);
         setShowSuggestions(true);
         setIsLoading(false);
@@ -60,6 +67,25 @@ export default function SignUpForm() {
     } catch (error) {
       console.error("Error fetching colleges:", error);
       setIsLoading(false);
+    }
+  };
+  const renderCollegeListTemp = (name) => {
+    if (name) {
+      // Filter the seattleColleges based on the input
+      const filteredColleges = seattleColleges.filter((college) =>
+        college.name.toLowerCase().includes(name.toLowerCase())
+      );
+
+      if (filteredColleges.length > 0) {
+        setColleges(filteredColleges);
+        setShowSuggestions(true);
+      } else {
+        setColleges([]);
+        setShowSuggestions(false);
+      }
+    } else {
+      setColleges([]);
+      setShowSuggestions(false);
     }
   };
 
@@ -225,7 +251,7 @@ export default function SignUpForm() {
                     value={searchInput}
                     onChange={(e) => {
                       setSearchInput(e.target.value);
-                      renderCollegeList(e.target.value);
+                      renderCollegeListTemp(e.target.value);
                     }}
                   />
                   {/* Show spinner while loading */}
