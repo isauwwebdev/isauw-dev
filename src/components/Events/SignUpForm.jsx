@@ -69,6 +69,7 @@ export default function SignUpForm() {
       setIsLoading(false);
     }
   };
+
   const renderCollegeListTemp = (name) => {
     if (name) {
       // Filter the seattleColleges based on the input
@@ -79,13 +80,16 @@ export default function SignUpForm() {
       if (filteredColleges.length > 0) {
         setColleges(filteredColleges);
         setShowSuggestions(true);
+        setSelectedCollege(name);
       } else {
-        setColleges([]);
-        setShowSuggestions(false);
+        setColleges([{ name }]);
+        setShowSuggestions(true);
+        setSelectedCollege(name);
       }
     } else {
       setColleges([]);
       setShowSuggestions(false);
+      setSelectedCollege("");
     }
   };
 
