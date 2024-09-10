@@ -455,11 +455,11 @@ export default function SignUpForm() {
                         </div>
                       </div>
                       <h2 className="text-center text-xl font-bold text-gray-900 mb-2">
-                        Success
+                        You're All Set!
                       </h2>
                       <p className="text-center text-gray-600 text-sm">
-                        Your registration has been successfully submitted! See
-                        you on Stamp Quest!
+                        Your registration has been successfully submitted! Thank
+                        you and see you on Seattle Stamp Quest!
                       </p>
                       <div className="flex flex-row gap-2 mt-4">
                         <Link
