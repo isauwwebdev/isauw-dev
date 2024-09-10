@@ -21,6 +21,7 @@ export default function SignUpForm() {
   // State for modals
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const seattleColleges = [
     { name: "University of Washington" },
@@ -38,6 +39,51 @@ export default function SignUpForm() {
     { name: "Seattle Central College" },
     { name: "Whatcom Community College" },
   ];
+
+  // Function to handle scrolling and escape key
+  useEffect(() => {
+    if (showSuccessModal || showErrorModal) {
+      document.body.style.overflow = "hidden"; // Disable scrolling
+
+      const handleEsc = (event) => {
+        if (event.key === "Escape") {
+          setShowSuccessModal(false);
+          setShowErrorModal(false);
+        }
+      };
+      window.addEventListener("keydown", handleEsc); // Add listener for ESC key
+
+      return () => {
+        document.body.style.overflow = "auto"; // Enable scrolling when modal closes
+        window.removeEventListener("keydown", handleEsc); // Cleanup ESC listener
+      };
+    }
+  }, [showSuccessModal, showErrorModal]);
+
+  const handleOutsideClick = (e) => {
+    if (e.target.id === "modal-overlay") {
+      setShowSuccessModal(false);
+      setShowErrorModal(false);
+    }
+  };
+
+  // Handle modal transitions
+  useEffect(() => {
+    if (showSuccessModal || showErrorModal) {
+      setTimeout(() => setIsVisible(true), 50); // Slight delay for smoother animation
+    } else {
+      setIsVisible(false);
+    }
+  }, [showSuccessModal, showErrorModal]);
+
+  // Close the modal with fade out
+  const closeModal = () => {
+    setIsVisible(false); // Start fade-out animation
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      setShowErrorModal(false);
+    }, 300); // Wait for the animation to complete before fully closing
+  };
 
   // Initialize tooltips
   useEffect(() => {
@@ -124,11 +170,11 @@ export default function SignUpForm() {
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           width: "100%",
-          minHeight: "140vh",
+          minHeight: "148vh",
         }}
       >
         <div className="flex justify-center">
-          <div className="bg-light rounded-lg w-10/12 md:w-2/5 mt-28 md:mt-24 mb-24 shadow-md">
+          <div className="bg-light rounded-lg w-10/12 md:w-2/5 mt-28 md:mt-24 shadow-md">
             <img
               src="../images/stamp_quest_poster.png"
               alt="stamp quest poster"
@@ -155,7 +201,7 @@ export default function SignUpForm() {
                     placeholder="Enter your first name"
                     className="form-control"
                     {...register("firstName", {
-                      required: "First Name is required",
+                      required: "First Name is required.",
                     })}
                   />
                   {errors.firstName && (
@@ -179,7 +225,7 @@ export default function SignUpForm() {
                     placeholder="Enter your last name"
                     autoComplete="last-name"
                     {...register("lastName", {
-                      required: "Last Name is required",
+                      required: "Last Name is required.",
                     })}
                   />
                   {errors.lastName && (
@@ -202,7 +248,7 @@ export default function SignUpForm() {
                     autoComplete="email"
                     className="form-control"
                     placeholder="Enter your email"
-                    {...register("email", { required: "Email is required" })}
+                    {...register("email", { required: "Email is required." })}
                   />
                   {errors.email && (
                     <div className="text-danger">{errors.email.message}</div>
@@ -264,20 +310,25 @@ export default function SignUpForm() {
                     placeholder="Enter your phone number"
                     international
                     defaultCountry="US"
-                    value={phoneNumber} // The state for the phone number
+                    value={phoneNumber}
                     {...register("phoneNumber", {
                       required: "Phone Number is required",
-                      validate: (value) =>
-                        isValidPhoneNumber(value) || "Phone Number is invalid",
+                      validate: (value) => {
+                        return (
+                          isValidPhoneNumber(value) ||
+                          "Phone Number should be valid and is required."
+                        );
+                      },
                     })}
                     onChange={(value) => {
-                      setPhoneNumber(value); // Update the phoneNumber state
-                      setValue("phoneNumber", value); // Update the form value for react-hook-form
+                      setPhoneNumber(value);
+                      setValue("phoneNumber", value);
                       clearErrors("phoneNumber");
                     }}
                   />
+
                   <small>
-                    Input a <i className="fa fa-whatsapp"></i>
+                    Enter a <i className="fa fa-whatsapp"></i>
                     <a
                       href="https://whatsapp.com"
                       target="_blank"
@@ -286,7 +337,7 @@ export default function SignUpForm() {
                       {" "}
                       WhatsApp
                     </a>{" "}
-                    registered number for event reminders.
+                    registered number to opt for event reminders.
                   </small>
                   {errors.phoneNumber && (
                     <div className="text-danger">
@@ -298,15 +349,7 @@ export default function SignUpForm() {
                 {/* Boolean Whatsapp */}
                 <div className="flex flex-row gap-2">
                   <label htmlFor="isWARegistered" className="form-label">
-                    Is your number registered on{" "}
-                    <a
-                      href="https://whatsapp.com"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      WhatsApp
-                    </a>
-                    ?
+                    Whatsapp registered number?
                   </label>
                   <div
                     data-bs-toggle="tooltip"
@@ -318,7 +361,7 @@ export default function SignUpForm() {
                       id="isWARegistered"
                       className="form-check-input"
                       checked={isWARegistered}
-                      onChange={(e) => setIsWARegistered(e.target.checked)} // Update state
+                      onChange={(e) => setIsWARegistered(e.target.checked)}
                     />
                   </div>
                 </div>
@@ -339,11 +382,12 @@ export default function SignUpForm() {
                       id="subscribe"
                       className="form-check-input"
                       checked={subscribe}
-                      onChange={(e) => setSubscribe(e.target.checked)} // Update state
+                      onChange={(e) => setSubscribe(e.target.checked)}
                     />
                   </div>
                 </div>
 
+                {/* Indication required fields */}
                 <div className="flex flex-row gap-1">
                   <div className="text-red-500"> *</div>
                   <small> indicates required fields </small>
@@ -351,7 +395,9 @@ export default function SignUpForm() {
 
                 <button
                   type="submit"
-                  className="btn btn-primary w-100"
+                  className={`w-full py-2 px-4 bg-[#941A1A] text-white font-semibold rounded-lg shadow-md hover:bg-[#7a1414] focus:outline-none focus:ring-2 focus:ring-[#941A1A] focus:ring-opacity-75 transition duration-300 ${
+                    isLoading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -361,7 +407,8 @@ export default function SignUpForm() {
                         size="sm"
                         role="status"
                         aria-hidden="true"
-                      />{" "}
+                        className="mr-2"
+                      />
                       Registering...
                     </>
                   ) : (
@@ -370,54 +417,124 @@ export default function SignUpForm() {
                 </button>
 
                 {/* Success Modal */}
-                <Modal
-                  show={showSuccessModal}
-                  onHide={() => setShowSuccessModal(false)}
-                  centered
-                  className="rounded-xl"
-                >
-                  <Modal.Header closeButton>
-                    <Modal.Title>Success</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                    Your registration has been successfully submitted! See you
-                    on Stamp Quest!
-                  </Modal.Body>
-                  <Modal.Footer>
-                    <Button
-                      variant="primary"
-                      onClick={() => setShowSuccessModal(false)}
+                {showSuccessModal && (
+                  <div
+                    id="modal-overlay"
+                    onClick={handleOutsideClick}
+                    className={`fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300 ${
+                      isVisible ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    <div
+                      className={`bg-white w-11/12 sm:w-96 rounded-xl shadow-lg p-6 transform transition-all duration-300 ${
+                        isVisible
+                          ? "scale-100 opacity-100"
+                          : "scale-90 opacity-0"
+                      }`}
                     >
-                      Close
-                    </Button>
-                    <Link to="/" className="btn btn-success">
-                      Go to Home
-                    </Link>
-                  </Modal.Footer>
-                </Modal>
+                      <div className="flex justify-end">
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          onClick={closeModal}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="flex justify-center items-center mb-4">
+                        <div className="bg-green-500 rounded-full p-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-8 w-8 text-white"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 00-1.414 0L9 11.586 4.707 7.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <h2 className="text-center text-xl font-bold text-gray-900 mb-2">
+                        Success
+                      </h2>
+                      <p className="text-center text-gray-600 text-sm">
+                        Your registration has been successfully submitted! See
+                        you on Stamp Quest!
+                      </p>
+                      <div className="flex flex-row gap-2 mt-4">
+                        <Link
+                          to="/"
+                          className="bg-green-500 text-white py-2 px-4 rounded-lg w-full text-center hover:bg-green-700 transition-all flex justify-center items-center gap-2"
+                        >
+                          Go to Home
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Error Modal */}
-                <Modal
-                  show={showErrorModal}
-                  onHide={() => setShowErrorModal(false)}
-                  centered
-                >
-                  <Modal.Header closeButton>
-                    <Modal.Title>Error</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                    There was an error submitting your registration. Please try
-                    again.
-                  </Modal.Body>
-                  <Modal.Footer>
-                    <Button
-                      variant="danger"
-                      onClick={() => setShowErrorModal(false)}
+                {showErrorModal && (
+                  <div
+                    id="modal-overlay"
+                    onClick={handleOutsideClick}
+                    className={`fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300 ${
+                      isVisible ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    <div
+                      className={`bg-white w-11/12 sm:w-96 rounded-xl shadow-lg p-6 transform transition-all duration-300 ${
+                        isVisible
+                          ? "scale-100 opacity-100"
+                          : "scale-90 opacity-0"
+                      }`}
                     >
-                      Close
-                    </Button>
-                  </Modal.Footer>
-                </Modal>
+                      <div className="flex justify-end">
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          onClick={closeModal}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="flex justify-center items-center mb-4">
+                        <div className="bg-red-500 rounded-full p-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-8 w-8 text-white"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <h2 className="text-center text-xl font-bold text-gray-900 mb-2">
+                        Error
+                      </h2>
+                      <p className="text-center text-gray-600 text-sm">
+                        There was an error submitting your registration. Please
+                        try again.
+                      </p>
+                      <div className="flex justify-center mt-4">
+                        <button
+                          className="bg-red-500 text-white py-2 px-4 rounded-lg w-full hover:bg-red-700 transition-all"
+                          onClick={closeModal}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* End modal */}
               </form>
             </div>
           </div>
