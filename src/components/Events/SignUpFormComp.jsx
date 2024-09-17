@@ -132,13 +132,13 @@ export default function SignUpFormComponent({
   };
 
   // Timeout for stopped typing (if wanna use API)
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      renderCollegeListTemp(searchInput);
-    }, 100);
+  // useEffect(() => {
+  //   const timeout = setTimeout(() => {
+  //     renderCollegeListTemp(searchInput);
+  //   }, 100);
 
-    return () => clearTimeout(timeout);
-  }, [searchInput]);
+  //   return () => clearTimeout(timeout);
+  // }, [searchInput]);
 
   const onSubmit = async (data) => {
     // console.log(data);
@@ -279,6 +279,7 @@ export default function SignUpFormComponent({
                     value={searchInput}
                     onChange={(e) => {
                       setSearchInput(e.target.value);
+                      renderCollegeListTemp(searchInput);
                     }}
                   />
                   {showSuggestions && !isLoading && (
@@ -470,7 +471,7 @@ export default function SignUpFormComponent({
                       </h2>
                       <p className="text-center text-gray-600 text-sm">
                         Your registration has been successfully submitted! Thank
-                        you and see you on Seattle Stamp Quest!
+                        you and see you on {eventName}!
                       </p>
                       <div className="flex flex-row gap-2 mt-4">
                         <Link
