@@ -227,7 +227,7 @@ function App() {
               <SignUpFormComponent
                 eventName="Seattle Stamp Quest"
                 BGImage="stampQuestFormBG.png"
-                firestorePath="2024/stamp-quest/event-registrations"
+                firestorePath="2024/stamp-quest/event-registrations-dev"
                 posterImage="stamp_quest_poster.png"
               />
             )}
@@ -238,7 +238,7 @@ function App() {
               <SignUpFormComponent
                 eventName="Seathrough"
                 BGImage="seathroughFormBG.png"
-                firestorePath="2024/seathrough/event-registrations"
+                firestorePath="2024/seathrough/event-registrations-dev"
                 posterImage="seathrough_poster.png"
               />
             )}
