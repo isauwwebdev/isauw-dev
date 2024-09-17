@@ -13,7 +13,7 @@ const firestore = admin.firestore();
 
 async function exportCollectionToCSV() {
   const collectionRef = firestore.collection(
-    "2024/stamp-quest/event-registrations-dev"
+    "2024/stamp-quest/event-registrations"
   ); // Replace with your collection name
   const snapshot = await collectionRef.get();
 
